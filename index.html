@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Valorant Strategy Board</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ======================= HEADER / TOOLBAR ======================= -->
+  <header id="app-header">
+    <h1 class="app-title">Valorant Strategy Board</h1>
+
+    <div id="map-selector-container" class="toolbar-group">
+      <label for="map-select">Map:</label>
+      <select id="map-select" disabled>
+        <option value="">Loading maps...</option>
+      </select>
+    </div>
+
+    <!-- Side selection: controls which side (attacker/defender) new agents
+         are placed as. Read by dragdrop.js at drop time. -->
+    <div id="side-selector" class="toolbar-group" role="group" aria-label="Side selection">
+      <button type="button" class="side-btn side-btn--attacker active" data-side="attacker" aria-pressed="true">
+        Attacker
+      </button>
+      <button type="button" class="side-btn side-btn--defender" data-side="defender" aria-pressed="false">
+        Defender
+      </button>
+    </div>
+
+    <!-- Future toolbar controls (round phase, clear board, save/load) get added here -->
+    <div id="toolbar-actions" class="toolbar-group">
+      <!-- e.g. <button id="clear-board-btn">Clear</button> -->
+    </div>
+  </header>
+
+  <!-- ======================= MAIN LAYOUT ======================= -->
+  <main id="app-main">
+
+    <!-- Agent roster: populated from the agents API, will become the drag source -->
+    <aside id="agent-panel" aria-label="Agent roster">
+      <h2 class="panel-title">Agents</h2>
+      <div id="agent-list" class="agent-list">
+        <p class="panel-placeholder">Loading agents...</p>
+      </div>
+
+      <!-- Ability menu for the currently-selected placed agent (click a
+           token on the board to select it). Populated by
+           ui.js's renderAbilityMenu(), owned by abilities.js. -->
+      <div id="ability-menu-container"></div>
+    </aside>
+
+    <!-- Tactical board: the map image + drop zone. -->
+    <section id="board-panel" aria-label="Tactical board">
+      <!-- Viewport: fixed-size window onto the board. Clips (overflow:hidden)
+           and owns the wheel-zoom listener, but is never itself scaled. -->
+      <div id="board-container">
+
+        <!-- Zoom target: everything that must move/scale together as one
+             unit lives inside here (map image, callouts layer, and
+             placed-agent tokens). zoom.js sets transform: scale/translate
+             on this single element, so both callouts and tokens positioned
+             as % of its box stay locked to their exact map location at any
+             zoom/pan state. -->
+        <div id="board-zoom-wrapper">
+          <img id="board-map-image" src="" alt="" hidden />
+
+          <!-- Map region labels ("A Main", "B Site", ...) rendered from the
+               selected map's callouts data by ui.js's renderCallouts() -->
+          <div id="board-callouts-layer"></div>
+
+          <!-- Placed ability shapes (lines/circles/points) are appended here
+               by abilities.js/ui.js. Sits below the tokens layer so agent
+               tokens are always clickable/draggable on top of abilities. -->
+          <div id="board-abilities-layer"></div>
+
+          <!-- Placed-agent tokens are appended here by dragdrop.js/ui.js as
+               absolutely-positioned .board-token elements -->
+          <div id="board-tokens-layer"></div>
+        </div>
+
+        <p id="board-placeholder" class="panel-placeholder">Select a map to begin</p>
+      </div>
+    </section>
+
+    <!-- Reserved for future panels: round notes, saved-strategy list, etc. -->
+    <aside id="side-panel" aria-label="Strategy details" hidden>
+      <!-- e.g. saved tactics list, notes editor -->
+    </aside>
+
+  </main>
+
+  <!-- ======================= GLOBAL STATUS / ERRORS ======================= -->
+  <div id="status-bar" role="status" aria-live="polite"></div>
+
+  <!-- Templates: reusable DOM fragments cloned by rendering functions -->
+  <template id="agent-card-template">
+    <div class="agent-card" draggable="true">
+      <img class="agent-card-icon" src="" alt="" />
+      <span class="agent-card-name"></span>
+    </div>
+  </template>
+
+  <template id="map-option-template">
+    <option></option>
+  </template>
+
+  <template id="board-token-template">
+    <div class="board-token" draggable="true">
+      <img class="board-token-icon" src="" alt="" draggable="false" />
+    </div>
+  </template>
+
+  <template id="board-callout-template">
+    <span class="board-callout"></span>
+  </template>
+
+  <!-- Ability shapes: one template per drawing type (line/circle/point),
+       selected by abilityDefinitions.js's `type` field. All are
+       draggable="true" for whole-shape repositioning; the line's inner
+       .ability-rotate-handle is explicitly draggable="false" so grabbing
+       it doesn't also start the parent's native drag (see abilities.js). -->
+  <template id="ability-line-template">
+    <div class="board-ability board-ability--line" draggable="true">
+      <span class="ability-rotate-handle" draggable="false"></span>
+    </div>
+  </template>
+
+  <template id="ability-circle-template">
+    <div class="board-ability board-ability--circle" draggable="true"></div>
+  </template>
+
+  <template id="ability-point-template">
+    <div class="board-ability board-ability--point" draggable="true">
+      <img class="board-ability-icon" src="" alt="" draggable="false" />
+    </div>
+  </template>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

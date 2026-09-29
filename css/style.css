@@ -1,0 +1,529 @@
+/* =========================================================
+   1. RESET & DESIGN TOKENS
+   ========================================================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-bg: #0f1923;          /* Valorant-esque dark background */
+  --color-panel: #1a2733;
+  --color-panel-alt: #22303d;
+  --color-border: #2c3e4f;
+  --color-text: #ece8e1;
+  --color-text-dim: #8a99a8;
+  --color-accent: #ff4655;      /* Valorant red */
+  --color-accent-hover: #ff5f6b;
+  --color-success: #4ade80;
+  --color-error: #f87171;
+
+  --color-attacker: #ff4655;    /* red side indicator */
+  --color-defender: #4da3ff;    /* blue side indicator */
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  --header-height: 60px;
+  --agent-panel-width: 240px;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: "Segoe UI", Roboto, system-ui, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================================
+   2. HEADER / TOOLBAR
+   ========================================================= */
+#app-header {
+  height: var(--header-height);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: 0 var(--space-lg);
+  background: var(--color-panel);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-title {
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+#toolbar-actions {
+  margin-left: auto;
+}
+
+select, button {
+  font: inherit;
+  background: var(--color-panel-alt);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+}
+
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* --- Side selector (Attacker / Defender toggle) --- */
+.side-btn {
+  opacity: 0.6;
+}
+
+.side-btn:hover {
+  opacity: 1;
+}
+
+.side-btn.active {
+  opacity: 1;
+  color: var(--color-text);
+}
+
+.side-btn--attacker.active {
+  background: var(--color-attacker);
+  border-color: var(--color-attacker);
+}
+
+.side-btn--defender.active {
+  background: var(--color-defender);
+  border-color: var(--color-defender);
+}
+
+.side-btn--attacker:hover {
+  background: var(--color-attacker);
+  border-color: var(--color-attacker);
+}
+
+.side-btn--defender:hover {
+  background: var(--color-defender);
+  border-color: var(--color-defender);
+}
+
+/* =========================================================
+   3. MAIN LAYOUT
+   ========================================================= */
+#app-main {
+  flex: 1;
+  display: flex;
+  min-height: 0; /* allow children to scroll instead of overflowing */
+}
+
+.panel-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-dim);
+  margin-bottom: var(--space-md);
+}
+
+.panel-placeholder {
+  color: var(--color-text-dim);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: var(--space-lg);
+}
+
+/* --- Agent panel (left sidebar) --- */
+#agent-panel {
+  width: var(--agent-panel-width);
+  flex-shrink: 0;
+  background: var(--color-panel);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-md);
+  overflow-y: auto;
+}
+
+.agent-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+}
+
+.agent-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-panel-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  cursor: grab;
+  transition: border-color 0.15s ease;
+}
+
+.agent-card:hover {
+  border-color: var(--color-accent);
+}
+
+.agent-card.dragging {
+  opacity: 0.4;
+}
+
+.agent-card-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.agent-card-name {
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--color-text-dim);
+}
+
+/* --- Ability menu (shown for the currently-selected placed agent) --- */
+#ability-menu-container:not(:empty) {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.ability-menu-title {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  margin-bottom: var(--space-sm);
+}
+
+.ability-menu-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.ability-menu-item {
+  width: 44px;
+  height: 44px;
+  padding: var(--space-xs);
+  background: var(--color-panel-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.ability-menu-item:hover {
+  border-color: var(--color-accent);
+}
+
+.ability-menu-item.active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(255, 70, 85, 0.35);
+}
+
+.ability-menu-item-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* --- Board panel (center) --- */
+#board-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  overflow: auto;
+}
+
+#board-container {
+  position: relative; /* anchor for the placeholder text */
+  width: 100%;
+  max-width: 1000px;
+  aspect-ratio: 1 / 1;
+  background: var(--color-panel-alt);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* clips the zoom wrapper when zoomed in or panned */
+  cursor: zoom-in;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* While right-click-drag panning: grabbing cursor, and suppress text
+   selection so a fast drag doesn't select nearby page text. */
+#board-container.panning {
+  cursor: grabbing;
+  user-select: none;
+}
+
+/* While an ability tool is armed (agent selected + ability icon clicked),
+   waiting for the user to click the map to place it. */
+#board-container.placing-ability {
+  cursor: crosshair;
+}
+
+/* Highlighted while a drag is hovering over the board */
+#board-container.drag-over {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(255, 70, 85, 0.25) inset;
+}
+
+/* Zoom target: scaled as one unit by zoom.js so the map image and every
+   token inside it move together, keeping tokens locked to their exact
+   map position (expressed as % of this box) at any zoom level. */
+#board-zoom-wrapper {
+  position: relative; /* anchor for absolutely-positioned agent tokens */
+  width: 100%;
+  height: 100%;
+  transform-origin: center center;
+}
+
+#board-map-image {
+  width: 100%;
+  height: 100%;
+  /* contain (not cover) so the full map is always visible, never cropped */
+  object-fit: contain;
+}
+
+#board-callouts-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Region labels ("A Main", "B Site", ...). Deliberately no background or
+   border — the text shadow alone keeps it readable over any part of the
+   map art, which is what makes it look native instead of like a UI chip. */
+.board-callout {
+  position: absolute;
+  transform: translate(-50%, -50%); /* left/top mark the label's center point */
+  pointer-events: none; /* never blocks drag-and-drop of agents underneath */
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 10px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+#board-abilities-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* individual ability shapes re-enable pointer-events */
+}
+
+/* --- Placed ability shapes ---
+   Colored by the owning agent's side, same palette as .board-token, so
+   a Viper wall and its Viper token read as one unit. */
+.board-ability {
+  position: absolute;
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.board-ability.dragging {
+  opacity: 0.4;
+}
+
+/* Line/wall (e.g. Breach's Fault Line, Viper's Toxic Screen). Positioned
+   at its start point (left/top = start %) as a thin rectangle, then
+   rotated + sized by abilities.js to reach the end point. transform-origin
+   stays at the left edge so rotation pivots around the start point, not
+   the shape's center. Height is set inline as a % (see ui.js's
+   createLineAbility/showLinePreview) so thickness stays map-relative; this
+   0.7% is only a fallback for the rare case none is passed. */
+.board-ability--line {
+  height: 0.7%;
+  top: 0;
+  left: 0;
+  transform-origin: left center;
+  border-radius: 3px;
+  background: var(--color-attacker);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+}
+
+.board-ability--line.defender {
+  background: var(--color-defender);
+}
+
+/* Placed while still being drawn (between the first and second click) —
+   lighter and dashed-looking via reduced opacity so it clearly reads as
+   "not committed yet". */
+.board-ability--line.previewing {
+  opacity: 0.5;
+}
+
+/* Grab handle at the line's far end. Dragging it adjusts the line's
+   length/angle (see abilities.js). draggable="false" in the HTML keeps
+   the browser from starting a native drag here instead of the custom
+   mousedown-based rotate gesture. */
+.ability-rotate-handle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translate(50%, -50%);
+  border-radius: 50%;
+  background: var(--color-text);
+  border: 2px solid var(--color-bg);
+  cursor: alias;
+  pointer-events: auto;
+}
+
+/* Area/smoke (e.g. Omen's Dark Cover). Translucent fill so the map stays
+   readable underneath. */
+.board-ability--circle {
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(255, 70, 85, 0.25);
+  border: 2px solid var(--color-attacker);
+}
+
+.board-ability--circle.defender {
+  background: rgba(77, 163, 255, 0.25);
+  border-color: var(--color-defender);
+}
+
+/* Generic point marker for everything not curated as line/circle. */
+.board-ability--point {
+  width: 28px;
+  height: 28px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid var(--color-attacker);
+  background: var(--color-panel);
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.board-ability--point.defender {
+  border-color: var(--color-defender);
+}
+
+.board-ability-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  pointer-events: none;
+}
+
+#board-tokens-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* individual tokens re-enable pointer-events */
+}
+
+/* --- Placed agent tokens ---
+   Side (.attacker / .defender) is applied only to tokens on the board —
+   the roster's .agent-card never receives these classes, so the original
+   icons in the side panel are unaffected. */
+.board-token {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  transform: translate(-50%, -50%); /* left/top mark the token's center */
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  background: var(--color-panel);
+  overflow: hidden;
+  cursor: grab;
+  pointer-events: auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.board-token.attacker {
+  border-color: var(--color-attacker);
+  box-shadow: 0 0 0 3px rgba(255, 70, 85, 0.35), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.board-token.defender {
+  border-color: var(--color-defender);
+  box-shadow: 0 0 0 3px rgba(77, 163, 255, 0.35), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.board-token:active {
+  cursor: grabbing;
+}
+
+.board-token.dragging {
+  opacity: 0.4;
+}
+
+/* Selected by clicking it — opens its ability menu in the side panel. */
+.board-token.selected {
+  box-shadow: 0 0 0 3px var(--color-text), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.board-token-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none; /* clicks/drags are handled by the parent .board-token */
+}
+
+/* --- Side panel (reserved) --- */
+#side-panel {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--color-panel);
+  border-left: 1px solid var(--color-border);
+  padding: var(--space-md);
+}
+
+/* =========================================================
+   4. STATUS / ERROR BAR
+   ========================================================= */
+#status-bar {
+  position: fixed;
+  bottom: var(--space-md);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  display: none; /* toggled on by JS when there's a message */
+}
+
+#status-bar.status-error {
+  display: block;
+  background: var(--color-error);
+  color: #2a0a0a;
+}
+
+#status-bar.status-info {
+  display: block;
+  background: var(--color-panel-alt);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
